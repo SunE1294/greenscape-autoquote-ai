@@ -9,13 +9,13 @@ echo Target: %REPO_URL%
 echo.
 
 git add .
-git commit -m "fix(imports): resolve all import paths to @/lib path aliases for clean Vercel compilation"
+git commit -m "feat(voice): implement real browser speech recognition (Web Speech API) for live voice dictation"
 git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 git push -u origin main
 
 echo.
 echo ==============================================================================
-echo  UPDATES PUSHED! Vercel will now automatically re-trigger build and succeed!
+echo  SUCCESS! Voice dictation feature pushed to GitHub and deploying to Vercel!
 echo ==============================================================================
 pause
