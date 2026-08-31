@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Mic, FileText, UploadCloud, ArrowRight, Loader2, CheckCircle2, ShieldAlert, Layers } from 'lucide-react';
-import { Proposal } from '../types';
+import { Proposal } from '@/lib/types';
 
 interface QuoteStudioProps {
   onProposalGenerated: (proposal: Proposal) => void;

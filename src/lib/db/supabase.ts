@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Proposal, IntegrationLog, ExecutiveStats } from '../types';
+import { Proposal, IntegrationLog, ExecutiveStats } from '@/lib/types';
 
 let supabaseClient: SupabaseClient | null = null;
 

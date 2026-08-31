@@ -5,8 +5,8 @@ import {
   Proposal, 
   ProposalLineItem, 
   PricingCatalogItem 
-} from '../types';
-import { GREENSCAPE_PRICING_CATALOG } from '../pricingCatalog';
+} from '@/lib/types';
+import { GREENSCAPE_PRICING_CATALOG } from '@/lib/pricingCatalog';
 import { 
   ShieldCheck, 
   ShieldAlert, 

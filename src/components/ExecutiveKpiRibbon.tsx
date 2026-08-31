@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Clock, TrendingUp, DollarSign, ShieldAlert, Sparkles, CheckCircle2, Flame } from 'lucide-react';
-import { ExecutiveStats } from '../types';
+import { ExecutiveStats } from '@/lib/types';
 
 interface KpiRibbonProps {
   stats: ExecutiveStats;

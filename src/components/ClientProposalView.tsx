@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Proposal } from '../types';
+import { Proposal } from '@/lib/types';
 import { 
   Trees, 
   CheckCircle2, 

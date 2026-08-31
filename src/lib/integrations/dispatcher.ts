@@ -1,5 +1,5 @@
-import { Proposal, IntegrationLog } from '../types';
-import { StorageAdapter } from '../db/supabase';
+import { Proposal, IntegrationLog } from '@/lib/types';
+import { StorageAdapter } from '@/lib/db/supabase';
 
 export interface DispatchOptions {
   proposal: Proposal;

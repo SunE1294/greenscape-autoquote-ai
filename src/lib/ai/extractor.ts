@@ -1,5 +1,5 @@
-import { GREENSCAPE_PRICING_CATALOG } from '../pricingCatalog';
-import { Proposal, ProposalLineItem, RenderRequest, TierPackage } from '../types';
+import { GREENSCAPE_PRICING_CATALOG } from '@/lib/pricingCatalog';
+import { Proposal, ProposalLineItem, RenderRequest, TierPackage } from '@/lib/types';
 
 export interface ExtractionInput {
   leadName: string;
