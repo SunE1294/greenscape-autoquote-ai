@@ -1,0 +1,300 @@
+import { PricingCatalogItem } from './types';
+
+export const GREENSCAPE_PRICING_CATALOG: PricingCatalogItem[] = [
+  // --- HARDSCAPE & PAVERS ---
+  {
+    id: 'paver-belgard-catalina',
+    category: 'Hardscape',
+    name: 'Belgard Catalina 3-Piece Paver Patio (Sand/Charcoal)',
+    description: 'Includes 4" aggregate base, sand bedding, polymeric joint sand, compaction, and edge restraints.',
+    unit: 'sq_ft',
+    baseCost: 9.50,
+    defaultRetailPrice: 16.50,
+    margin: 0.424,
+    typicalLaborHours: 0.08,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'paver-travertine-tumbled',
+    category: 'Hardscape',
+    name: 'Premium Tumbled Travertine Pool Deck / Patio (Ivory / Walnut)',
+    description: 'High-end heat-resistant French pattern travertine. Dry set on 4" compacted base and 1" sand bed.',
+    unit: 'sq_ft',
+    baseCost: 14.00,
+    defaultRetailPrice: 24.00,
+    margin: 0.417,
+    typicalLaborHours: 0.12,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'paver-porcelain-outdoor',
+    category: 'Hardscape',
+    name: 'Outdoor Porcelain Pavers (24"x24" Anti-Slip)',
+    description: 'Ultra-modern 2cm thick rectified porcelain pavers installed on crushed stone pedestal system or mortar bed.',
+    unit: 'sq_ft',
+    baseCost: 18.50,
+    defaultRetailPrice: 32.00,
+    margin: 0.422,
+    typicalLaborHours: 0.15,
+    isPopularInPhoenix: false,
+  },
+
+  // --- PERGOLA & SHADE STRUCTURES ---
+  {
+    id: 'pergola-alumawood-12x16',
+    category: 'Pergola & Shade',
+    name: 'Alumawood Insulated Solid Shade Structure (12x16 ft)',
+    description: 'Heavy-duty embossed wood-grain aluminum with 3" insulated foam roof panels, integrated fan beam, and gutter system.',
+    unit: 'unit',
+    baseCost: 5200.00,
+    defaultRetailPrice: 8800.00,
+    margin: 0.409,
+    typicalLaborHours: 16.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'pergola-custom-cedar-14x18',
+    category: 'Pergola & Shade',
+    name: 'Custom Western Red Cedar Timber Pergola (14x18 ft)',
+    description: 'Hand-notched 6x6 posts, 4x8 rafters, decorative corbel ends, steel post brackets into concrete footers, custom stain.',
+    unit: 'unit',
+    baseCost: 7400.00,
+    defaultRetailPrice: 12500.00,
+    margin: 0.408,
+    typicalLaborHours: 24.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'shade-motorized-louvered',
+    category: 'Pergola & Shade',
+    name: 'Motorized Louvered Aluminum Pergola System (16x20 ft)',
+    description: 'Smart remote-controlled rotating louvers with rain sensor, integrated perimeter LED lighting, and hidden internal drainage.',
+    unit: 'unit',
+    baseCost: 14500.00,
+    defaultRetailPrice: 24500.00,
+    margin: 0.408,
+    typicalLaborHours: 32.0,
+    isPopularInPhoenix: false,
+  },
+
+  // --- TURF & PUTTING GREENS ---
+  {
+    id: 'turf-pet-deluxe-80oz',
+    category: 'Turf & Putting Green',
+    name: 'ProGreen 80oz Heavy-Traffic Heat-Deflecting Artificial Turf',
+    description: 'CoolFlow backing with antimicrobial Envirofill infill. Includes 3" crushed rock base, weed barrier, and perimeter nailing.',
+    unit: 'sq_ft',
+    baseCost: 5.20,
+    defaultRetailPrice: 9.50,
+    margin: 0.453,
+    typicalLaborHours: 0.05,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'turf-putting-green-pro',
+    category: 'Turf & Putting Green',
+    name: 'Custom 4-Hole Undulated Putting Green & Fringe',
+    description: 'Professional true-roll nylon putting surface with contoured sub-base, aluminum cups, flags, and 3-ft two-tone fringe.',
+    unit: 'sq_ft',
+    baseCost: 11.00,
+    defaultRetailPrice: 19.50,
+    margin: 0.436,
+    typicalLaborHours: 0.14,
+    isPopularInPhoenix: true,
+  },
+
+  // --- FIRE & WATER FEATURES ---
+  {
+    id: 'fire-custom-gas-firepit',
+    category: 'Fire & Water Features',
+    name: 'Custom 48" Natural Gas / Propane Fire Pit (Block, Stucco & Paver Cap)',
+    description: 'Concrete block structure with smooth acrylic stucco finish, matching travertine/flagstone cap, 150k BTU brass burner, lava rock.',
+    unit: 'unit',
+    baseCost: 2200.00,
+    defaultRetailPrice: 3800.00,
+    margin: 0.421,
+    typicalLaborHours: 12.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'fire-linear-fire-table',
+    category: 'Fire & Water Features',
+    name: 'Modern 72" Linear Gas Fire Table with Fireglass',
+    description: 'Contemporary low-profile linear fire feature, electronic spark ignition, cobalt reflective fireglass, connection to gas line stub.',
+    unit: 'unit',
+    baseCost: 3100.00,
+    defaultRetailPrice: 5400.00,
+    margin: 0.426,
+    typicalLaborHours: 14.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'water-modern-sheer-descent',
+    category: 'Fire & Water Features',
+    name: 'Modern 3-Blade Sheer Descent Water Wall (10 ft)',
+    description: 'Submerged dual-chamber reservoir, block & stacked stone wall with 3 LED backlit sheer water blades, auto-fill valve & pump.',
+    unit: 'unit',
+    baseCost: 4800.00,
+    defaultRetailPrice: 8200.00,
+    margin: 0.415,
+    typicalLaborHours: 20.0,
+    isPopularInPhoenix: true,
+  },
+
+  // --- OUTDOOR KITCHENS & BBQ ---
+  {
+    id: 'kitchen-island-10ft-bbq',
+    category: 'Outdoor Kitchen',
+    name: 'Custom 10-ft L-Shaped BBQ Island with Granite Countertop',
+    description: 'Steel frame with cement board & acrylic stucco, Level 2 leathered granite slab, cutout for 32" drop-in grill and double access doors.',
+    unit: 'unit',
+    baseCost: 5600.00,
+    defaultRetailPrice: 9600.00,
+    margin: 0.417,
+    typicalLaborHours: 22.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'kitchen-appliance-package-blaze',
+    category: 'Outdoor Kitchen',
+    name: 'Blaze Premium 32" 4-Burner 304 Stainless BBQ Grill + Outdoor Refrigerator',
+    description: 'Blaze 32" Built-In Gas Grill (LBM32), Blaze 4.1 cu ft outdoor rated fridge, double stainless storage drawers, electrical hookup.',
+    unit: 'unit',
+    baseCost: 3800.00,
+    defaultRetailPrice: 5800.00,
+    margin: 0.345,
+    typicalLaborHours: 6.0,
+    isPopularInPhoenix: true,
+  },
+
+  // --- MASONRY & RETAINING WALLS ---
+  {
+    id: 'masonry-block-stucco-wall',
+    category: 'Masonry & Retaining',
+    name: 'Concrete Block Perimeter / Retaining Wall (Up to 3ft High)',
+    description: '8x8x16 CMU block on steel-reinforced concrete continuous footer, filled with grout, smooth sand stucco finish painted to match home.',
+    unit: 'linear_ft',
+    baseCost: 65.00,
+    defaultRetailPrice: 110.00,
+    margin: 0.409,
+    typicalLaborHours: 0.4,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'masonry-stacked-stone-veneer',
+    category: 'Masonry & Retaining',
+    name: 'Natural Ledgestone / Stacked Stone Veneer Accent',
+    description: 'Installed over lath and scratch coat with matching corner pieces on walls, planters, or BBQ island pillars.',
+    unit: 'sq_ft',
+    baseCost: 19.00,
+    defaultRetailPrice: 34.00,
+    margin: 0.441,
+    typicalLaborHours: 0.2,
+    isPopularInPhoenix: true,
+  },
+
+  // --- IRRIGATION & DRAINAGE ---
+  {
+    id: 'irrigation-drip-zone-smart',
+    category: 'Irrigation & Drainage',
+    name: 'Smart Drip Irrigation Zone with Rain Bird Smart WiFi Controller',
+    description: 'Includes commercial valve, backflow preventer, pressure regulator, 1/2" poly header with micro-emitters, WiFi app setup.',
+    unit: 'zone',
+    baseCost: 750.00,
+    defaultRetailPrice: 1350.00,
+    margin: 0.444,
+    typicalLaborHours: 6.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'drainage-catch-basin-french',
+    category: 'Irrigation & Drainage',
+    name: 'Yard Drainage Swale & 4" Corrugated NDS French Drain System',
+    description: '12" catch basins, 4" perforated pipe in gravel sock, sloped gravity discharge away from home foundation.',
+    unit: 'linear_ft',
+    baseCost: 28.00,
+    defaultRetailPrice: 48.00,
+    margin: 0.417,
+    typicalLaborHours: 0.25,
+    isPopularInPhoenix: true,
+  },
+
+  // --- LANDSCAPING & PLANTS ---
+  {
+    id: 'landscape-desert-specimen-package',
+    category: 'Landscape',
+    name: 'Desert Modern Specimen Plant Package (24" Box Palms, Agaves, Ocotillo, Cacti)',
+    description: 'Curated architectural desert vegetation: 2x 24" box multi-trunk Pygmy Palms, 5x Blue Glow Agaves, 1x Red Ocotillo, soil amendment & organic top-dress.',
+    unit: 'unit',
+    baseCost: 2400.00,
+    defaultRetailPrice: 4100.00,
+    margin: 0.415,
+    typicalLaborHours: 12.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'landscape-granite-rock-surface',
+    category: 'Landscape',
+    name: 'Screened Surface Decomposed Granite Rock (Madison Gold / Apache Brown 1/2")',
+    description: 'Spread 2" deep over commercial woven 20-year weed control barrier.',
+    unit: 'sq_ft',
+    baseCost: 1.40,
+    defaultRetailPrice: 2.60,
+    margin: 0.462,
+    typicalLaborHours: 0.02,
+    isPopularInPhoenix: true,
+  },
+
+  // --- LOW-VOLTAGE LIGHTING ---
+  {
+    id: 'lighting-led-path-spot-system',
+    category: 'Lighting',
+    name: 'Architectural LED Landscape Lighting Package (10 Solid Brass Fixtures + 300W Transformer)',
+    description: 'Solid brass up-lights on specimen trees, path lights, commercial 300W low-voltage stainless transformer with astronomic timer.',
+    unit: 'unit',
+    baseCost: 1650.00,
+    defaultRetailPrice: 2950.00,
+    margin: 0.441,
+    typicalLaborHours: 8.0,
+    isPopularInPhoenix: true,
+  },
+
+  // --- DEMO, EXCAVATION & LOGISTICS ---
+  {
+    id: 'demo-existing-concrete-soil',
+    category: 'Demolition & Excavation',
+    name: 'Site Demolition, Bobcat Excavation & Haul-Away (Standard Yard)',
+    description: 'Includes mini-skid steer operator, breakout of old concrete/dirt, bobcat haul to 30-yard roll-off dumpster and legal landfill disposal.',
+    unit: 'allowance',
+    baseCost: 1800.00,
+    defaultRetailPrice: 2850.00,
+    margin: 0.368,
+    typicalLaborHours: 14.0,
+    isPopularInPhoenix: true,
+  },
+  {
+    id: 'permit-phoenix-hoa-package',
+    category: 'Permits & Engineering',
+    name: 'City of Phoenix / Maricopa County Permit & HOA Architectural Submittal Package',
+    description: 'Site plan draft, structural engineering seal for shade cover/gas line, permit filing fees, HOA board submittal form.',
+    unit: 'unit',
+    baseCost: 650.00,
+    defaultRetailPrice: 1150.00,
+    margin: 0.435,
+    typicalLaborHours: 4.0,
+    isPopularInPhoenix: true,
+  }
+];
+
+export function findCatalogItem(id: string): PricingCatalogItem | undefined {
+  return GREENSCAPE_PRICING_CATALOG.find(i => i.id === id);
+}
+
+export function searchCatalog(query: string): PricingCatalogItem[] {
+  const q = query.toLowerCase();
+  return GREENSCAPE_PRICING_CATALOG.filter(
+    i => i.name.toLowerCase().includes(q) || 
+         i.description.toLowerCase().includes(q) || 
+         i.category.toLowerCase().includes(q)
+  );
+}
