@@ -9,7 +9,7 @@ echo Target: %REPO_URL%
 echo.
 
 git add .
-git commit -m "feat(email): wire real Resend and SendGrid transactional email delivery with fallback warnings"
+git commit -m "fix(modal): close unclosed tags for Twilio SMS label in ProposalDispatchModal"
 git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 git push -u origin main

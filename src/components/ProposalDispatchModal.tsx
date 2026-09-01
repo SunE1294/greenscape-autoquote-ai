@@ -203,6 +203,9 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       Sends personalized text to {proposal.leadPhone} with link to client proposal landing page.
                     </p>
+                  </div>
+                </label>
+
                 {/* 5. Client Email */}
                 <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors">
                   <input

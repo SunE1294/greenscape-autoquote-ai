@@ -6,7 +6,7 @@ $RepoUrl = "https://github.com/SunE1294/greenscape-autoquote-ai.git"
 Write-Host "Target Repository: $RepoUrl" -ForegroundColor Cyan
 
 git add .
-git commit -m "feat(email): wire real Resend and SendGrid transactional email delivery with fallback warnings"
+git commit -m "fix(modal): close unclosed tags for Twilio SMS label in ProposalDispatchModal"
 git remote remove origin 2>$null
 git remote add origin $RepoUrl
 git push -u origin main
