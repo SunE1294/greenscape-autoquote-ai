@@ -15,6 +15,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [slackWebhook, setSlackWebhook] = useState('');
   const [ghlWebhook, setGhlWebhook] = useState('');
   const [stripeKey, setStripeKey] = useState('');
+  const [resendKey, setResendKey] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   React.useEffect(() => {
@@ -27,6 +28,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       if (savedUrl) setSupabaseUrl(savedUrl);
       const savedKey = localStorage.getItem('greenscape_supabase_key');
       if (savedKey) setSupabaseKey(savedKey);
+      const savedResend = localStorage.getItem('greenscape_resend_key');
+      if (savedResend) setResendKey(savedResend);
     }
   }, [isOpen]);
 
@@ -39,6 +42,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       if (openaiKey) localStorage.setItem('greenscape_openai_key', openaiKey);
       if (supabaseUrl) localStorage.setItem('greenscape_supabase_url', supabaseUrl);
       if (supabaseKey) localStorage.setItem('greenscape_supabase_key', supabaseKey);
+      if (resendKey) localStorage.setItem('greenscape_resend_key', resendKey);
     }
     setSavedSuccess(true);
     setTimeout(() => {
@@ -149,6 +153,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               value={stripeKey}
               onChange={(e) => setStripeKey(e.target.value)}
               placeholder="sk_test_..."
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono"
+            />
+          </div>
+
+          {/* Resend Email Key */}
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">
+              Resend API Key (Client Proposal Delivery)
+            </label>
+            <input
+              type="password"
+              value={resendKey}
+              onChange={(e) => setResendKey(e.target.value)}
+              placeholder="re_..."
               className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono"
             />
           </div>

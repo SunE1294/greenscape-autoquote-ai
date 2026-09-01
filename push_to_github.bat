@@ -9,7 +9,7 @@ echo Target: %REPO_URL%
 echo.
 
 git add .
-git commit -m "fix(syntax): add missing try block in QuoteStudio handleGenerate function"
+git commit -m "feat(email): wire real Resend and SendGrid transactional email delivery with fallback warnings"
 git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 git push -u origin main

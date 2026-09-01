@@ -11,7 +11,9 @@ import {
   MessageSquare, 
   DollarSign, 
   Sparkles,
-  Smartphone
+  Smartphone,
+  Mail,
+  AlertTriangle
 } from 'lucide-react';
 
 interface DispatchModalProps {
@@ -33,6 +35,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
   const [dispatchStripe, setDispatchStripe] = useState(true);
   const [dispatchSlack, setDispatchSlack] = useState(true);
   const [dispatchSms, setDispatchSms] = useState(true);
+  const [dispatchEmail, setDispatchEmail] = useState(true);
   const [isDispatching, setIsDispatching] = useState(false);
   const [dispatchSuccess, setDispatchSuccess] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
@@ -44,6 +47,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
     try {
       const savedStripeKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_stripe_key') : null;
       const savedSupabaseKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_supabase_key') : null;
+      const savedResendKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_resend_key') : null;
 
       const res = await fetch('/api/dispatch', {
         method: 'POST',
@@ -54,9 +58,11 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
           dispatchStripe,
           dispatchSlack,
           dispatchSms,
+          dispatchEmail,
           dispatchedBy: 'Marcus Tate',
           stripeSecretKey: savedStripeKey || undefined,
           supabaseKey: savedSupabaseKey || undefined,
+          emailApiKey: savedResendKey || undefined,
         }),
       });
 
@@ -197,6 +203,22 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       Sends personalized text to {proposal.leadPhone} with link to client proposal landing page.
                     </p>
+                {/* 5. Client Email */}
+                <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={dispatchEmail}
+                    onChange={(e) => setDispatchEmail(e.target.checked)}
+                    className="mt-1 rounded border-slate-700 text-emerald-500 focus:ring-emerald-500"
+                  />
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-sky-400" />
+                      Client Proposal Email Packet (Resend / SendGrid)
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Sends branded HTML proposal with investment tiers and direct deposit link to {proposal.leadEmail}.
+                    </p>
                   </div>
                 </label>
               </div>
@@ -211,7 +233,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
               <div>
                 <h3 className="text-lg font-bold text-white">Proposal Dispatched Successfully!</h3>
                 <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
-                  All channels synchronized in real-time. Client has received SMS and Stripe deposit checkout link.
+                  All channels processed. Proposal link and Stripe 50% deposit checkout link generated.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
@@ -229,6 +251,34 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
                   )}
                 </div>
               </div>
+
+              {/* Email Delivery Feedback */}
+              {resultData?.emailStatus === 'sent' && (
+                <div className="p-2.5 bg-emerald-950/60 border border-emerald-700/60 rounded-xl text-emerald-300 text-xs flex items-center gap-2 max-w-md mx-auto">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Proposal Email Delivered to <strong>{proposal.leadEmail}</strong> via {resultData.emailProvider || 'Resend'}.</span>
+                </div>
+              )}
+
+              {resultData?.emailStatus === 'failed' && (
+                <div className="p-2.5 bg-rose-950/60 border border-rose-700/60 rounded-xl text-rose-300 text-xs text-left max-w-md mx-auto">
+                  <div className="font-semibold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400" /> Email Sending Failed:
+                  </div>
+                  <div className="text-[11px] font-mono mt-0.5">{resultData.emailError}</div>
+                </div>
+              )}
+
+              {resultData?.emailStatus === 'unconfigured' && (
+                <div className="p-2.5 bg-amber-950/60 border border-amber-700/60 rounded-xl text-amber-300 text-xs text-left max-w-md mx-auto">
+                  <div className="font-semibold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Email Integration Notice:
+                  </div>
+                  <p className="text-[11px] text-amber-200/90 mt-0.5">
+                    No email was sent to <strong>{proposal.leadEmail}</strong> because <code>RESEND_API_KEY</code> is missing in Vercel Environment Variables.
+                  </p>
+                </div>
+              )}
 
               {resultData?.stripePaymentLink && (
                 <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800 text-left text-xs">

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { proposal, dispatchGhl, dispatchStripe, dispatchSlack, dispatchSms, dispatchedBy, stripeSecretKey, supabaseKey } = body;
+    const { proposal, dispatchGhl, dispatchStripe, dispatchSlack, dispatchSms, dispatchEmail = true, dispatchedBy, stripeSecretKey, supabaseKey, emailApiKey } = body;
 
     if (!proposal || !proposal.id) {
       return NextResponse.json({ error: 'Valid proposal object is required for dispatch' }, { status: 400 });
@@ -18,16 +18,18 @@ export async function POST(req: NextRequest) {
     const proto = req.headers.get('x-forwarded-proto') || 'https';
     const appUrl = `${proto}://${host}`;
 
-    // Execute multi-channel webhooks & Stripe session
+    // Execute multi-channel webhooks, Stripe session, and email dispatch
     const result = await executeMultiChannelDispatch({
       proposal,
       dispatchGhl,
       dispatchStripe,
       dispatchSlack,
       dispatchSms,
+      dispatchEmail,
       dispatchedBy,
       appUrl,
       stripeSecretKey,
+      emailApiKey,
     });
 
     // ACTIVE SUPABASE INSTANTIATION & INSERTION DIRECTLY IN API ROUTE

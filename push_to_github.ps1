@@ -6,7 +6,7 @@ $RepoUrl = "https://github.com/SunE1294/greenscape-autoquote-ai.git"
 Write-Host "Target Repository: $RepoUrl" -ForegroundColor Cyan
 
 git add .
-git commit -m "fix(syntax): add missing try block in QuoteStudio handleGenerate function"
+git commit -m "feat(email): wire real Resend and SendGrid transactional email delivery with fallback warnings"
 git remote remove origin 2>$null
 git remote add origin $RepoUrl
 git push -u origin main

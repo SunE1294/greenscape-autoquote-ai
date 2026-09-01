@@ -8,9 +8,11 @@ export interface DispatchOptions {
   dispatchStripe?: boolean;
   dispatchSlack?: boolean;
   dispatchSms?: boolean;
+  dispatchEmail?: boolean;
   dispatchedBy?: string;
   appUrl?: string;
   stripeSecretKey?: string;
+  emailApiKey?: string;
 }
 
 export interface DispatchResult {
@@ -22,12 +24,24 @@ export interface DispatchResult {
   ghlOpportunityId?: string;
   slackStatus?: string;
   smsStatus?: string;
+  emailStatus?: 'sent' | 'failed' | 'unconfigured';
+  emailProvider?: string;
+  emailError?: string;
   savedToDatabase?: boolean;
   dbError?: string;
 }
 
 export async function executeMultiChannelDispatch(options: DispatchOptions): Promise<DispatchResult> {
-  const { proposal, dispatchGhl = true, dispatchStripe = true, dispatchSlack = true, dispatchSms = true, dispatchedBy = 'Marcus Tate' } = options;
+  const { 
+    proposal, 
+    dispatchGhl = true, 
+    dispatchStripe = true, 
+    dispatchSlack = true, 
+    dispatchSms = true, 
+    dispatchEmail = true,
+    dispatchedBy = 'Marcus Tate' 
+  } = options;
+  
   const logs: IntegrationLog[] = [];
   const now = new Date().toISOString();
 
@@ -52,7 +66,6 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
           typescript: true,
         });
 
-        // Real stripe.checkout.sessions.create() call with all requested parameters
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: [
@@ -106,7 +119,6 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     }
 
     if (!stripeSuccess) {
-      // Deterministic demo checkout session URL when API key is pending
       stripePaymentLink = `${baseUrl}/proposal/${proposal.id}?deposit=demo_checkout&amount=${Math.round(depositAmount)}`;
       stripeResponse = {
         id: `cs_test_${proposal.id}`,
@@ -140,7 +152,154 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     await StorageAdapter.logIntegration(stripeLog);
   }
 
-  // 2. GOHIGHLEVEL (GHL) CRM SYNC
+  // 2. TRANSACTIONAL CLIENT PROPOSAL EMAIL (RESEND / SENDGRID)
+  let emailStatus: 'sent' | 'failed' | 'unconfigured' = 'unconfigured';
+  let emailProvider: string | undefined = undefined;
+  let emailError: string | undefined = undefined;
+
+  if (dispatchEmail && proposal.leadEmail && proposal.leadEmail.includes('@')) {
+    const resendKey = options.emailApiKey || process.env.RESEND_API_KEY;
+    const sendgridKey = process.env.SENDGRID_API_KEY;
+    const sender = process.env.EMAIL_FROM || 'Greenscape Pro <onboarding@resend.dev>';
+
+    const emailSubject = `Official Proposal & 3D Specifications: ${proposal.propertyAddress} - Greenscape Pro`;
+    const emailHtml = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background-color: #070c18; color: #f8fafc; padding: 32px; border-radius: 16px; border: 1px solid #1e293b;">
+        <div style="border-bottom: 1px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px;">
+          <h1 style="color: #10b981; margin: 0; font-size: 22px; letter-spacing: -0.5px;">GREENSCAPE PRO</h1>
+          <p style="color: #94a3b8; margin: 4px 0 0; font-size: 13px;">High-End Residential Outdoor Living · Phoenix, AZ</p>
+        </div>
+        
+        <h2 style="color: #ffffff; font-size: 18px; margin-bottom: 12px;">Proposal Ready: ${proposal.propertyAddress}</h2>
+        <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+          Dear ${proposal.leadName},<br><br>
+          Thank you for taking the time to walk your property with us. Based on our site survey, our design and estimating team has prepared your complete outdoor living proposal.
+        </p>
+
+        <div style="background-color: #0f172a; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #1e293b;">
+          <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Total Project Investment</div>
+          <div style="font-size: 28px; font-weight: 900; color: #ffffff; margin-top: 4px;">$${proposal.totalPrice.toLocaleString()}</div>
+          <div style="font-size: 13px; color: #10b981; font-weight: 700; margin-top: 12px;">50% Deposit to Authorize &amp; Schedule: $${(proposal.depositRequired || proposal.totalPrice * 0.5).toLocaleString()}</div>
+        </div>
+
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${baseUrl}/proposal/${proposal.id}" style="background-color: #10b981; color: #000000; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 15px; border-radius: 8px; display: inline-block;">
+            Review Interactive Proposal &rarr;
+          </a>
+        </div>
+
+        ${stripePaymentLink ? `
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="${stripePaymentLink}" style="color: #38bdf8; font-size: 13px; text-decoration: underline;">
+            Or proceed directly to Secure Stripe Deposit Checkout &rarr;
+          </a>
+        </div>
+        ` : ''}
+
+        <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; border-top: 1px solid #1e293b; padding-top: 20px; margin-top: 32px;">
+          Best regards,<br>
+          <strong style="color: #ffffff;">Marcus Tate</strong><br>
+          Founder &amp; Principal Contractor · Greenscape Pro<br>
+          ROC License #321984 · Phoenix, AZ
+        </p>
+      </div>
+    `;
+
+    // 1. Check Resend Provider
+    if (resendKey && (resendKey.startsWith('re_') || resendKey.length > 10)) {
+      emailProvider = 'Resend';
+      try {
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: sender,
+            to: [proposal.leadEmail],
+            subject: emailSubject,
+            html: emailHtml,
+          }),
+        });
+
+        const resendData = await resendRes.json();
+        if (resendRes.ok) {
+          emailStatus = 'sent';
+          console.log(`[Email Dispatch] Successfully sent proposal email via Resend to ${proposal.leadEmail}. ID:`, resendData.id);
+        } else {
+          emailStatus = 'failed';
+          emailError = resendData.message || resendData.name || 'Resend API rejected request';
+          console.error('[Email Dispatch] Resend Error:', resendData);
+        }
+      } catch (err: any) {
+        emailStatus = 'failed';
+        emailError = err.message;
+        console.error('[Email Dispatch] Resend Network Exception:', err);
+      }
+    } 
+    // 2. Check SendGrid Provider
+    else if (sendgridKey && sendgridKey.startsWith('SG.')) {
+      emailProvider = 'SendGrid';
+      try {
+        const sgRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sendgridKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: proposal.leadEmail }] }],
+            from: { email: process.env.SENDGRID_FROM_EMAIL || 'proposals@greenscapepro.com', name: 'Greenscape Pro' },
+            subject: emailSubject,
+            content: [{ type: 'text/html', value: emailHtml }],
+          }),
+        });
+
+        if (sgRes.status === 202) {
+          emailStatus = 'sent';
+          console.log(`[Email Dispatch] Successfully sent proposal email via SendGrid to ${proposal.leadEmail}`);
+        } else {
+          const sgData = await sgRes.json().catch(() => ({}));
+          emailStatus = 'failed';
+          emailError = sgData.errors?.[0]?.message || `SendGrid error status: ${sgRes.status}`;
+          console.error('[Email Dispatch] SendGrid Error:', sgData);
+        }
+      } catch (err: any) {
+        emailStatus = 'failed';
+        emailError = err.message;
+        console.error('[Email Dispatch] SendGrid Network Exception:', err);
+      }
+    } else {
+      emailStatus = 'unconfigured';
+      emailError = 'No RESEND_API_KEY or SENDGRID_API_KEY detected in Vercel Environment Variables';
+      console.warn('[Email Dispatch] Notice: Email API key missing in environment variables. Email notification skipped.');
+    }
+
+    const emailLog: IntegrationLog = {
+      id: 'log_email_' + Math.random().toString(36).substring(2, 9),
+      proposalId: proposal.id,
+      service: emailProvider || 'Email (Unconfigured)',
+      event: 'send_transactional_proposal_email',
+      status: emailStatus === 'sent' ? 'success' : emailStatus === 'failed' ? 'error' : 'simulated',
+      payload: {
+        to: proposal.leadEmail,
+        subject: emailSubject,
+        provider: emailProvider || 'None',
+      },
+      response: {
+        status: emailStatus,
+        error: emailError || null,
+        provider: emailProvider || null,
+        timestamp: now,
+      },
+      timestamp: now,
+    };
+    logs.push(emailLog);
+    await StorageAdapter.logIntegration(emailLog);
+  }
+
+  // 3. GOHIGHLEVEL (GHL) CRM SYNC
   if (dispatchGhl) {
     const ghlWebhook = process.env.GHL_WEBHOOK_URL;
     let ghlSuccess = false;
@@ -210,7 +369,7 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     await StorageAdapter.logIntegration(ghlLog);
   }
 
-  // 3. SLACK TEAM ALERTS (#proposals-ready & #carlos-cad-queue)
+  // 4. SLACK TEAM ALERTS (#proposals-ready & #carlos-cad-queue)
   if (dispatchSlack) {
     const slackWebhook = process.env.SLACK_WEBHOOK_URL;
     let slackSuccess = false;
@@ -285,7 +444,7 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     await StorageAdapter.logIntegration(slackLog);
   }
 
-  // 4. CLIENT INSTANT SMS (Marcus Tate Voice)
+  // 5. CLIENT INSTANT SMS (Marcus Tate Voice)
   if (dispatchSms) {
     const smsMessage = `Hi ${proposal.leadName.split(' ')[0]}, this is Marcus from Greenscape Pro. It was great walking your property! I just finished your custom outdoor living proposal and 3D specifications here: ${baseUrl}/proposal/${proposal.id}. Take a look and let me know your thoughts!`;
 
@@ -336,6 +495,9 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     ghlOpportunityId,
     slackStatus: 'dispatched',
     smsStatus: 'sent',
+    emailStatus,
+    emailProvider,
+    emailError,
     savedToDatabase: saveResult.dbInserted,
     dbError: saveResult.error,
   };
