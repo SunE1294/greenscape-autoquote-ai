@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Mic, MicOff, FileText, ArrowRight, Loader2, ShieldAlert, Volume2 } from 'lucide-react';
+import { Sparkles, Mic, MicOff, FileText, ArrowRight, Loader2, ShieldAlert, Volume2, RotateCcw } from 'lucide-react';
 import { Proposal } from '@/lib/types';
 
 interface QuoteStudioProps {
@@ -30,11 +30,11 @@ const PRESET_SCENARIOS = [
 ];
 
 export const QuoteStudio: React.FC<QuoteStudioProps> = ({ onProposalGenerated }) => {
-  const [leadName, setLeadName] = useState(PRESET_SCENARIOS[0].leadName);
-  const [leadEmail, setLeadEmail] = useState('david.miller@azluxuryhomes.com');
-  const [leadPhone, setLeadPhone] = useState('(602) 555-0144');
-  const [propertyAddress, setPropertyAddress] = useState(PRESET_SCENARIOS[0].propertyAddress);
-  const [rawNotes, setRawNotes] = useState(PRESET_SCENARIOS[0].notes);
+  const [leadName, setLeadName] = useState('');
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
+  const [propertyAddress, setPropertyAddress] = useState('');
+  const [rawNotes, setRawNotes] = useState('');
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState<string>('');
@@ -222,6 +222,22 @@ export const QuoteStudio: React.FC<QuoteStudioProps> = ({ onProposalGenerated })
               Preset {idx + 1}
             </button>
           ))}
+          {(leadName || rawNotes || propertyAddress) && (
+            <button
+              type="button"
+              onClick={() => {
+                setLeadName('');
+                setLeadEmail('');
+                setLeadPhone('');
+                setPropertyAddress('');
+                setRawNotes('');
+              }}
+              className="px-2.5 py-1 text-[11px] font-medium bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/60 rounded-lg transition-colors flex items-center gap-1"
+              title="Clear all fields"
+            >
+              <RotateCcw className="w-3 h-3" /> Clear
+            </button>
+          )}
         </div>
       </div>
 
@@ -337,7 +353,7 @@ export const QuoteStudio: React.FC<QuoteStudioProps> = ({ onProposalGenerated })
                 ? 'border-emerald-500 focus:border-emerald-400 focus:ring-emerald-500 ring-1 ring-emerald-500/50'
                 : 'border-slate-800 focus:border-emerald-500 focus:ring-emerald-500'
             }`}
-            placeholder="Type, paste, or speak messy notes from the job walk..."
+            placeholder="Type, paste, or click 'Live Voice Dictation' to speak notes from the job walk..."
           />
         </div>
 

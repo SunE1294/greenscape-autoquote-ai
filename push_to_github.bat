@@ -9,7 +9,7 @@ echo Target: %REPO_URL%
 echo.
 
 git add .
-git commit -m "feat(voice): implement real browser speech recognition (Web Speech API) for live voice dictation"
+git commit -m "refactor(ui): start Quote Studio with clean empty inputs and add clear form button"
 git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 git push -u origin main
