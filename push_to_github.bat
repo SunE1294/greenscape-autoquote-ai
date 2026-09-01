@@ -9,7 +9,7 @@ echo Target: %REPO_URL%
 echo.
 
 git add .
-git commit -m "fix(build): dynamic pg import and serverComponentsExternalPackages to eliminate webpack bundling error"
+git commit -m "docs(readme): update README.md with live Vercel URL, Mermaid diagrams, and complete feature documentation"
 git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 git push -u origin main
