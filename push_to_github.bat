@@ -9,7 +9,7 @@ echo Target: %REPO_URL%
 echo.
 
 git add .
-git commit -m "feat(supabase): wire direct @supabase/supabase-js active inserts and PostgreSQL pooler for guaranteed DB persistence"
+git commit -m "fix(syntax): add missing try block in QuoteStudio handleGenerate function"
 git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 git push -u origin main

@@ -166,6 +166,7 @@ export const QuoteStudio: React.FC<QuoteStudioProps> = ({ onProposalGenerated })
       setGenerationStep('Evaluating $30k threshold for Carlos Reyes 3D CAD trigger...');
     }, 1800);
 
+    try {
       const savedSupabaseKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_supabase_key') : null;
       const savedOpenAiKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_openai_key') : null;
 
