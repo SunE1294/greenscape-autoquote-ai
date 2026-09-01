@@ -17,15 +17,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [stripeKey, setStripeKey] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedStripe = localStorage.getItem('greenscape_stripe_key');
+      if (savedStripe) setStripeKey(savedStripe);
+      const savedOpenAi = localStorage.getItem('greenscape_openai_key');
+      if (savedOpenAi) setOpenaiKey(savedOpenAi);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      if (stripeKey) localStorage.setItem('greenscape_stripe_key', stripeKey);
+      if (openaiKey) localStorage.setItem('greenscape_openai_key', openaiKey);
+    }
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
       onClose();
-    }, 1200);
+    }, 1000);
   };
 
   return (

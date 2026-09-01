@@ -42,6 +42,8 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
   const handleExecuteDispatch = async () => {
     setIsDispatching(true);
     try {
+      const savedStripeKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_stripe_key') : null;
+
       const res = await fetch('/api/dispatch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,6 +54,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
           dispatchSlack,
           dispatchSms,
           dispatchedBy: 'Marcus Tate',
+          stripeSecretKey: savedStripeKey || undefined,
         }),
       });
 
@@ -226,10 +229,29 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
               </div>
 
               {resultData?.stripePaymentLink && (
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-left text-xs">
-                  <span className="text-slate-400 font-semibold">Live Stripe Deposit URL:</span>
-                  <div className="font-mono text-emerald-400 break-all text-[11px] mt-1">
-                    {resultData.stripePaymentLink}
+                <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800 text-left text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-300 font-semibold flex items-center gap-1.5">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                      Stripe 50% Deposit Checkout Link:
+                    </span>
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700/60 rounded">
+                      Amount: ${(proposal.depositRequired || proposal.totalPrice * 0.5).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                    <span className="font-mono text-emerald-400 truncate text-[11px]">
+                      {resultData.stripePaymentLink}
+                    </span>
+                    <a
+                      href={resultData.stripePaymentLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center justify-center gap-1.5 flex-shrink-0 transition-colors shadow-sm shadow-emerald-900/50"
+                    >
+                      <span>Open Stripe Checkout</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
               )}

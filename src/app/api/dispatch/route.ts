@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valid proposal object is required for dispatch' }, { status: 400 });
     }
 
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'greenscape-autoquote-ai-09.vercel.app';
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const appUrl = `${proto}://${host}`;
+
     const result = await executeMultiChannelDispatch({
       proposal,
       dispatchGhl,
@@ -19,6 +23,8 @@ export async function POST(req: NextRequest) {
       dispatchSlack,
       dispatchSms,
       dispatchedBy,
+      appUrl,
+      stripeSecretKey: body.stripeSecretKey,
     });
 
     return NextResponse.json(result);
