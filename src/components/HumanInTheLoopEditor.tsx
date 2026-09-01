@@ -28,12 +28,14 @@ interface HumanInTheLoopEditorProps {
   proposal: Proposal;
   onUpdateProposal: (updated: Proposal) => void;
   onOpenDispatchModal: () => void;
+  onStartNew?: () => void;
 }
 
 export const HumanInTheLoopEditor: React.FC<HumanInTheLoopEditorProps> = ({
   proposal,
   onUpdateProposal,
   onOpenDispatchModal,
+  onStartNew,
 }) => {
   const [activeTier, setActiveTier] = useState<'good' | 'better' | 'best'>(proposal.selectedTier || 'better');
   const [editingBrief, setEditingBrief] = useState(false);
@@ -154,12 +156,23 @@ export const HumanInTheLoopEditor: React.FC<HumanInTheLoopEditorProps> = ({
         </div>
 
         {/* 1-Click Multi-Channel Dispatch Trigger */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {onStartNew && (
+            <button
+              onClick={onStartNew}
+              className="px-3 py-2 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-xl flex items-center gap-1.5 transition-colors"
+              title="Start a fresh proposal"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              + New Quote
+            </button>
+          )}
+
           <a
             href={proposal.clientViewUrl}
             target="_blank"
             rel="noreferrer"
-            className="px-3.5 py-2 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-xl flex items-center gap-1.5 transition-colors"
+            className="px-3 py-2 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-xl flex items-center gap-1.5 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Client View
@@ -170,7 +183,7 @@ export const HumanInTheLoopEditor: React.FC<HumanInTheLoopEditorProps> = ({
             className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Send className="w-4 h-4" />
-            Approve & 1-Click Dispatch
+            Approve &amp; 1-Click Dispatch
           </button>
         </div>
       </div>

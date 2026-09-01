@@ -300,7 +300,7 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     updatedAt: now,
   };
 
-  await StorageAdapter.saveProposal(updatedProposal);
+  const saveResult = await StorageAdapter.saveProposal(updatedProposal);
 
   return {
     success: true,
@@ -310,5 +310,7 @@ export async function executeMultiChannelDispatch(options: DispatchOptions): Pro
     ghlOpportunityId,
     slackStatus: 'dispatched',
     smsStatus: 'sent',
+    savedToDatabase: saveResult.dbInserted,
+    dbError: saveResult.error,
   };
 }

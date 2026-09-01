@@ -30,6 +30,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-700/50 rounded-full">
                 P0 AutoQuote AI
               </span>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Supabase DB Live
+              </span>
             </div>
             <p className="text-xs text-slate-400">Phoenix, AZ · High-End Outdoor Living</p>
           </div>

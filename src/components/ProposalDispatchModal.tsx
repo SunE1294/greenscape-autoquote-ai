@@ -19,6 +19,7 @@ interface DispatchModalProps {
   onClose: () => void;
   proposal: Proposal;
   onDispatchComplete: (updatedProposal: Proposal, logs: IntegrationLog[]) => void;
+  onResetAndNewProposal?: () => void;
 }
 
 export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
@@ -26,6 +27,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
   onClose,
   proposal,
   onDispatchComplete,
+  onResetAndNewProposal,
 }) => {
   const [dispatchGhl, setDispatchGhl] = useState(true);
   const [dispatchStripe, setDispatchStripe] = useState(true);
@@ -206,6 +208,21 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
                 <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
                   All channels synchronized in real-time. Client has received SMS and Stripe deposit checkout link.
                 </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+                  <span className="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700/60">
+                    ID: {proposal.id}
+                  </span>
+                  {resultData?.savedToDatabase ? (
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/50 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Supabase DB Row Synced
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-950 text-blue-300 border border-blue-800/50">
+                      ✓ Saved to Persistence Engine
+                    </span>
+                  )}
+                </div>
               </div>
 
               {resultData?.stripePaymentLink && (
@@ -222,31 +239,56 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
 
         {/* Modal Footer */}
         <div className="p-5 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-          >
-            {dispatchSuccess ? 'Close Window' : 'Cancel'}
-          </button>
+          {dispatchSuccess ? (
+            <>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                Stay on this Proposal
+              </button>
 
-          {!dispatchSuccess && (
-            <button
-              onClick={handleExecuteDispatch}
-              disabled={isDispatching}
-              className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-            >
-              {isDispatching ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Dispatching Webhooks...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>Confirm &amp; Dispatch Channels</span>
-                </>
-              )}
-            </button>
+              <button
+                onClick={() => {
+                  if (onResetAndNewProposal) {
+                    onResetAndNewProposal();
+                  } else {
+                    onClose();
+                  }
+                }}
+                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Done &amp; Create New Proposal</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleExecuteDispatch}
+                disabled={isDispatching}
+                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-950/50 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              >
+                {isDispatching ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Dispatching Webhooks &amp; DB...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Confirm &amp; Dispatch Channels</span>
+                  </>
+                )}
+              </button>
+            </>
           )}
         </div>
       </div>

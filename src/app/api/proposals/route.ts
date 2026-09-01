@@ -31,8 +31,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Proposal ID is required' }, { status: 400 });
     }
 
-    await StorageAdapter.saveProposal(body);
-    return NextResponse.json({ success: true, proposal: body });
+    const saveResult = await StorageAdapter.saveProposal(body);
+    return NextResponse.json({
+      success: true,
+      proposal: body,
+      savedToDatabase: saveResult.dbInserted,
+      dbError: saveResult.error,
+    });
   } catch (error: any) {
     console.error('Error updating proposal:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -28,9 +28,14 @@ export async function POST(req: NextRequest) {
     });
 
     // Save to persistent database
-    await StorageAdapter.saveProposal(result.proposal);
+    const saveResult = await StorageAdapter.saveProposal(result.proposal);
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      savedToDatabase: saveResult.dbInserted,
+      dbError: saveResult.error,
+      proposalId: saveResult.id,
+    });
   } catch (error: any) {
     console.error('API Error generating proposal:', error);
     return NextResponse.json(

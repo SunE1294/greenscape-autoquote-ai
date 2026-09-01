@@ -6,21 +6,27 @@ let supabaseClient: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient | null {
   if (supabaseClient) return supabaseClient;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
-  if (url && key && !url.includes('your-project-id')) {
+  if (url && key && !url.includes('your-project-id') && key !== 'your-supabase-anon-key-here') {
     try {
-      supabaseClient = createClient(url, key);
+      supabaseClient = createClient(url, key, {
+        auth: { persistSession: false },
+      });
       return supabaseClient;
     } catch (e) {
-      console.warn('Could not initialize Supabase client, using storage adapter fallback:', e);
+      console.warn('Could not initialize Supabase client:', e);
     }
   }
   return null;
 }
 
-// In-Memory / Global Fallback Cache for local executions & zero-setup demos
+export function isDatabaseConnected(): boolean {
+  return getSupabase() !== null;
+}
+
+// In-Memory / Global Fallback Cache
 const globalMemoryStore = {
   proposals: new Map<string, Proposal>(),
   logs: [] as IntegrationLog[],
@@ -198,171 +204,6 @@ export function seedInitialData() {
       dispatchedAt: new Date(Date.now() - 3600 * 1000 * 24 * 1).toISOString(),
       dispatchedBy: 'Marcus Tate',
       clientViewUrl: '/proposal/prop_arcadia_01'
-    },
-    {
-      id: 'prop_scottsdale_02',
-      leadName: 'Robert & Elena Vance',
-      leadEmail: 'r.vance@vancerefrigeration.com',
-      leadPhone: '(480) 555-0199',
-      propertyAddress: '9210 N 104th St, Scottsdale, AZ 85258',
-      city: 'Scottsdale, AZ',
-      status: 'under_review',
-      createdAt: new Date(Date.now() - 3600 * 1000 * 12).toISOString(),
-      updatedAt: new Date(Date.now() - 3600 * 1000 * 2).toISOString(),
-      rawNotes: 'Scottsdale site walk 8/30. Vance residence. Wants 650 sq ft Belgard Catalina pavers. 12x16 Alumawood insulated solid shade structure. 10ft custom BBQ island with Blaze 32" grill and outdoor fridge. 4-hole putting green 350 sq ft. Scottsdale HOA is fast. Needs quote by Monday.',
-      summaryScope: 'Scottsdale outdoor entertainment backyard including Belgard Catalina pavers, 12x16 Alumawood solid insulated cover, 10ft BBQ kitchen island with Blaze appliances, and 4-hole custom putting green.',
-      siteConstraints: ['Verify electrical panel capacity for BBQ fridge', 'Scottsdale HOA architectural submittal'],
-      hoaApprovalRequired: true,
-      permitRequired: true,
-      items: [
-        {
-          id: 'item_1',
-          catalogItemId: 'demo-existing-concrete-soil',
-          category: 'Demolition & Excavation',
-          name: 'Site Demolition & Excavation',
-          description: 'Excavate dirt and grade for pavers and putting green.',
-          quantity: 1,
-          unit: 'allowance',
-          unitCost: 1800,
-          unitPrice: 2850,
-          totalCost: 1800,
-          totalPrice: 2850,
-          margin: 0.368,
-        },
-        {
-          id: 'item_2',
-          catalogItemId: 'paver-belgard-catalina',
-          category: 'Hardscape',
-          name: 'Belgard Catalina 3-Piece Paver Patio',
-          description: '650 sq ft Belgard Catalina pavers with polymer joint sand.',
-          quantity: 650,
-          unit: 'sq_ft',
-          unitCost: 9.5,
-          unitPrice: 16.5,
-          totalCost: 6175,
-          totalPrice: 10725,
-          margin: 0.424,
-        },
-        {
-          id: 'item_3',
-          catalogItemId: 'pergola-alumawood-12x16',
-          category: 'Pergola & Shade',
-          name: 'Alumawood Insulated Solid Shade Structure (12x16 ft)',
-          description: '3" insulated foam roof panels with fan beam and gutter system.',
-          quantity: 1,
-          unit: 'unit',
-          unitCost: 5200,
-          unitPrice: 8800,
-          totalCost: 5200,
-          totalPrice: 8800,
-          margin: 0.409,
-        },
-        {
-          id: 'item_4',
-          catalogItemId: 'kitchen-island-10ft-bbq',
-          category: 'Outdoor Kitchen',
-          name: 'Custom 10-ft L-Shaped BBQ Island',
-          description: 'Steel frame, stucco finish, leathered granite countertop.',
-          quantity: 1,
-          unit: 'unit',
-          unitCost: 5600,
-          unitPrice: 9600,
-          totalCost: 5600,
-          totalPrice: 9600,
-          margin: 0.417,
-        },
-        {
-          id: 'item_5',
-          catalogItemId: 'kitchen-appliance-package-blaze',
-          category: 'Outdoor Kitchen',
-          name: 'Blaze Premium 32" BBQ Grill & Outdoor Fridge',
-          description: 'Blaze 32" 4-burner grill, stainless fridge, double drawers.',
-          quantity: 1,
-          unit: 'unit',
-          unitCost: 3800,
-          unitPrice: 5800,
-          totalCost: 3800,
-          totalPrice: 5800,
-          margin: 0.345,
-        },
-        {
-          id: 'item_6',
-          catalogItemId: 'turf-putting-green-pro',
-          category: 'Turf & Putting Green',
-          name: 'Custom 4-Hole Undulated Putting Green & Fringe',
-          description: '350 sq ft nylon putting green with aluminum cups and 2-tone fringe.',
-          quantity: 350,
-          unit: 'sq_ft',
-          unitCost: 11,
-          unitPrice: 19.5,
-          totalCost: 3850,
-          totalPrice: 6825,
-          margin: 0.436,
-        },
-        {
-          id: 'item_7',
-          catalogItemId: 'permit-phoenix-hoa-package',
-          category: 'Permits & Engineering',
-          name: 'City Permit & HOA Package',
-          description: 'Gas line permit, shade cover structural engineering, HOA submittal.',
-          quantity: 1,
-          unit: 'unit',
-          unitCost: 650,
-          unitPrice: 1150,
-          totalCost: 650,
-          totalPrice: 1150,
-          margin: 0.435,
-        }
-      ],
-      subtotalCost: 27075,
-      subtotalPrice: 45750,
-      totalCost: 27075,
-      totalPrice: 45750,
-      grossMarginPercent: 0.408,
-      isMarginHealthy: true,
-      depositRequired: 22875,
-      renderRequest: {
-        required: true,
-        reason: 'Project value ($45,750) exceeds $30,000 threshold. BBQ Island and putting green layout requires 3D visualization.',
-        suggestedViews: ['Pergola & BBQ Island Perspective', 'Putting Green Contour Elevation'],
-        designBrief: 'Carlos: Model 12x16 Alumawood cover over Belgard patio connecting to 10ft BBQ island. Show 4-hole putting green contour.',
-        assignedTo: 'Carlos Reyes (Lead Designer)',
-        status: 'in_progress',
-        deadlineEstimate: '48 hours'
-      },
-      tiers: {
-        good: {
-          tier: 'good',
-          name: 'Essential Outdoor Package',
-          description: 'Belgard pavers and Alumawood shade cover without BBQ island.',
-          totalPrice: 34312,
-          depositAmount: 17156,
-          estimatedWeeks: 2,
-          highlightedItems: ['Belgard Pavers', 'Alumawood Cover', 'Putting Green']
-        },
-        better: {
-          tier: 'better',
-          name: 'Signature Living Package (Selected)',
-          description: 'Pavers, Alumawood shade, complete 10ft BBQ kitchen & Blaze grill, and putting green.',
-          totalPrice: 45750,
-          depositAmount: 22875,
-          estimatedWeeks: 3,
-          highlightedItems: ['Belgard Pavers', 'Alumawood Insulated Shade', '10ft BBQ Island + Blaze Grill', 'Putting Green']
-        },
-        best: {
-          tier: 'best',
-          name: 'Resort Luxury Masterpiece',
-          description: 'Upgrades to motorized louvered roof and adds sheer descent water feature.',
-          totalPrice: 61762,
-          depositAmount: 30881,
-          estimatedWeeks: 5,
-          highlightedItems: ['Motorized Louvered Pergola', 'BBQ Kitchen', 'Putting Green', 'Sheer Water Feature']
-        }
-      },
-      selectedTier: 'better',
-      slackDispatched: true,
-      smsDispatched: false,
-      clientViewUrl: '/proposal/prop_scottsdale_02'
     }
   ];
 
@@ -372,24 +213,35 @@ export function seedInitialData() {
 // Initial auto-seed
 seedInitialData();
 
+export interface SaveProposalResult {
+  success: boolean;
+  id: string;
+  dbInserted: boolean;
+  error?: string;
+}
+
 export const StorageAdapter = {
-  async saveProposal(proposal: Proposal): Promise<void> {
+  async saveProposal(proposal: Proposal): Promise<SaveProposalResult> {
     const supabase = getSupabase();
+    let dbInserted = false;
+    let dbError: string | undefined = undefined;
+
     if (supabase) {
       try {
-        const { error } = await supabase.from('proposals').upsert({
+        // 1. Real SQL / Supabase INSERT/UPSERT into `proposals` table
+        const { error: proposalError } = await supabase.from('proposals').upsert({
           id: proposal.id,
           lead_name: proposal.leadName,
           lead_email: proposal.leadEmail,
           lead_phone: proposal.leadPhone,
           property_address: proposal.propertyAddress,
-          city: proposal.city,
+          city: proposal.city || 'Phoenix, AZ',
           status: proposal.status,
           raw_notes: proposal.rawNotes,
           summary_scope: proposal.summaryScope,
-          site_constraints: proposal.siteConstraints,
-          hoa_approval_required: proposal.hoaApprovalRequired,
-          permit_required: proposal.permitRequired,
+          site_constraints: proposal.siteConstraints || [],
+          hoa_approval_required: proposal.hoaApprovalRequired ?? true,
+          permit_required: proposal.permitRequired ?? true,
           subtotal_cost: proposal.subtotalCost,
           subtotal_price: proposal.subtotalPrice,
           total_cost: proposal.totalCost,
@@ -397,32 +249,98 @@ export const StorageAdapter = {
           gross_margin_percent: proposal.grossMarginPercent,
           is_margin_healthy: proposal.isMarginHealthy,
           deposit_required: proposal.depositRequired,
-          render_required: proposal.renderRequest.required,
-          render_status: proposal.renderRequest.status,
-          render_details: proposal.renderRequest,
-          tier_packages: proposal.tiers,
-          selected_tier: proposal.selectedTier,
+          render_required: proposal.renderRequest?.required || false,
+          render_status: proposal.renderRequest?.status || 'not_required',
+          render_details: proposal.renderRequest || {},
+          tier_packages: proposal.tiers || {},
+          selected_tier: proposal.selectedTier || 'better',
           stripe_payment_link: proposal.stripePaymentLink,
-          slack_dispatched: proposal.slackDispatched,
-          sms_dispatched: proposal.smsDispatched,
+          stripe_deposit_invoice_id: proposal.stripeDepositInvoiceId,
+          slack_dispatched: proposal.slackDispatched || false,
+          sms_dispatched: proposal.smsDispatched || false,
           dispatched_at: proposal.dispatchedAt,
           dispatched_by: proposal.dispatchedBy,
           updated_at: new Date().toISOString(),
         });
-        if (error) console.warn('Supabase upsert warning, updating cache:', error);
-      } catch (e) {
-        console.warn('Supabase error:', e);
+
+        if (proposalError) {
+          console.error('Supabase proposals table upsert error:', proposalError);
+          dbError = proposalError.message;
+        } else {
+          dbInserted = true;
+        }
+
+        // 2. Real SQL / Supabase INSERT/UPSERT into `proposal_items` table
+        if (proposal.items && proposal.items.length > 0) {
+          const lineItems = proposal.items.map((item, idx) => ({
+            id: item.id || `item_${proposal.id}_${idx + 1}`,
+            proposal_id: proposal.id,
+            catalog_item_id: item.catalogItemId || null,
+            category: item.category || 'Hardscape',
+            name: item.name,
+            description: item.description || '',
+            quantity: item.quantity,
+            unit: item.unit || 'unit',
+            unit_cost: item.unitCost,
+            unit_price: item.unitPrice,
+            total_cost: item.totalCost,
+            total_price: item.totalPrice,
+            margin: item.margin,
+            tier: item.tier || 'better',
+          }));
+
+          const { error: itemsError } = await supabase.from('proposal_items').upsert(lineItems);
+          if (itemsError) {
+            console.error('Supabase proposal_items table upsert error:', itemsError);
+            dbError = (dbError ? dbError + '; ' : '') + itemsError.message;
+          }
+        }
+
+        // 3. Real SQL / Supabase INSERT/UPSERT into `render_requests` table (if Carlos render needed)
+        if (proposal.renderRequest && proposal.renderRequest.required) {
+          const { error: renderError } = await supabase.from('render_requests').upsert({
+            id: `render_${proposal.id}`,
+            proposal_id: proposal.id,
+            assigned_to: proposal.renderRequest.assignedTo || 'Carlos Reyes (Lead Designer)',
+            reason: proposal.renderRequest.reason,
+            suggested_views: proposal.renderRequest.suggestedViews || [],
+            design_brief: proposal.renderRequest.designBrief,
+            status: proposal.renderRequest.status || 'pending',
+            deadline_estimate: proposal.renderRequest.deadlineEstimate || '48 hours',
+          });
+          if (renderError) {
+            console.error('Supabase render_requests table upsert error:', renderError);
+          }
+        }
+      } catch (e: any) {
+        console.error('Exception writing to Supabase database:', e);
+        dbError = e.message;
       }
+    } else {
+      console.warn('Supabase credentials not detected; using in-memory store.');
     }
-    // Always persist to memory store
+
+    // Always keep memory store updated for instantaneous UI feedback
     globalMemoryStore.proposals.set(proposal.id, proposal);
+
+    return {
+      success: true,
+      id: proposal.id,
+      dbInserted,
+      error: dbError,
+    };
   },
 
   async getProposalById(id: string): Promise<Proposal | null> {
     const supabase = getSupabase();
     if (supabase) {
       try {
-        const { data, error } = await supabase.from('proposals').select('*').eq('id', id).single();
+        const { data, error } = await supabase
+          .from('proposals')
+          .select('*, proposal_items(*)')
+          .eq('id', id)
+          .single();
+
         if (data && !error) {
           return {
             id: data.id,
@@ -437,7 +355,21 @@ export const StorageAdapter = {
             siteConstraints: data.site_constraints || [],
             hoaApprovalRequired: data.hoa_approval_required,
             permitRequired: data.permit_required,
-            items: [], // Will be filled from cache or items table
+            items: (data.proposal_items || []).map((item: any) => ({
+              id: item.id,
+              catalogItemId: item.catalog_item_id,
+              category: item.category,
+              name: item.name,
+              description: item.description,
+              quantity: Number(item.quantity),
+              unit: item.unit,
+              unitCost: Number(item.unit_cost),
+              unitPrice: Number(item.unit_price),
+              totalCost: Number(item.total_cost),
+              totalPrice: Number(item.total_price),
+              margin: Number(item.margin),
+              tier: item.tier,
+            })),
             subtotalCost: Number(data.subtotal_cost),
             subtotalPrice: Number(data.subtotal_price),
             totalCost: Number(data.total_cost),
@@ -449,15 +381,18 @@ export const StorageAdapter = {
             tiers: data.tier_packages,
             selectedTier: data.selected_tier || 'better',
             stripePaymentLink: data.stripe_payment_link,
+            stripeDepositInvoiceId: data.stripe_deposit_invoice_id,
             slackDispatched: data.slack_dispatched,
             smsDispatched: data.sms_dispatched,
+            dispatchedAt: data.dispatched_at,
+            dispatchedBy: data.dispatched_by,
             createdAt: data.created_at,
             updatedAt: data.updated_at,
             clientViewUrl: `/proposal/${data.id}`,
           };
         }
       } catch (e) {
-        console.warn('Supabase query error, reading from memory store:', e);
+        console.warn('Supabase query error:', e);
       }
     }
     return globalMemoryStore.proposals.get(id) || null;
@@ -468,13 +403,66 @@ export const StorageAdapter = {
     const supabase = getSupabase();
     if (supabase) {
       try {
-        const { data, error } = await supabase.from('proposals').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('proposals')
+          .select('*, proposal_items(*)')
+          .order('created_at', { ascending: false });
+
         if (data && data.length > 0 && !error) {
-          // Merge with memory store
-          return Array.from(globalMemoryStore.proposals.values());
+          const dbProposals: Proposal[] = data.map((row: any) => ({
+            id: row.id,
+            leadName: row.lead_name,
+            leadEmail: row.lead_email,
+            leadPhone: row.lead_phone,
+            propertyAddress: row.property_address,
+            city: row.city,
+            status: row.status,
+            rawNotes: row.raw_notes,
+            summaryScope: row.summary_scope,
+            siteConstraints: row.site_constraints || [],
+            hoaApprovalRequired: row.hoa_approval_required,
+            permitRequired: row.permit_required,
+            items: (row.proposal_items || []).map((item: any) => ({
+              id: item.id,
+              catalogItemId: item.catalog_item_id,
+              category: item.category,
+              name: item.name,
+              description: item.description,
+              quantity: Number(item.quantity),
+              unit: item.unit,
+              unitCost: Number(item.unit_cost),
+              unitPrice: Number(item.unit_price),
+              totalCost: Number(item.total_cost),
+              totalPrice: Number(item.total_price),
+              margin: Number(item.margin),
+              tier: item.tier,
+            })),
+            subtotalCost: Number(row.subtotal_cost),
+            subtotalPrice: Number(row.subtotal_price),
+            totalCost: Number(row.total_cost),
+            totalPrice: Number(row.total_price),
+            grossMarginPercent: Number(row.gross_margin_percent),
+            isMarginHealthy: row.is_margin_healthy,
+            depositRequired: Number(row.deposit_required),
+            renderRequest: row.render_details || { required: false, status: 'not_required' },
+            tiers: row.tier_packages,
+            selectedTier: row.selected_tier || 'better',
+            stripePaymentLink: row.stripe_payment_link,
+            stripeDepositInvoiceId: row.stripe_deposit_invoice_id,
+            slackDispatched: row.slack_dispatched,
+            smsDispatched: row.sms_dispatched,
+            dispatchedAt: row.dispatched_at,
+            dispatchedBy: row.dispatched_by,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+            clientViewUrl: `/proposal/${row.id}`,
+          }));
+
+          dbProposals.forEach(p => globalMemoryStore.proposals.set(p.id, p));
+          return dbProposals;
         }
       } catch (e) {
-        console.warn('Supabase list error, reading from memory store:', e);
+        console.warn('Supabase list error:', e);
       }
     }
     return Array.from(globalMemoryStore.proposals.values()).sort(
@@ -514,7 +502,7 @@ export const StorageAdapter = {
     const carlosCount = list.filter(p => p.renderRequest.required && p.renderRequest.status !== 'completed').length;
 
     return {
-      averageTurnaroundHours: 0.25, // 15 mins vs 7.5 days
+      averageTurnaroundHours: 0.25,
       historicalTurnaroundDays: 7.5,
       totalProposalsGenerated: list.length,
       totalPipelineValue,

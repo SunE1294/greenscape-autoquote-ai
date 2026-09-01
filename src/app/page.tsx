@@ -100,6 +100,14 @@ export default function DashboardPage() {
     fetchStats();
   };
 
+  const handleResetAndNewProposal = () => {
+    setSelectedProposal(null);
+    setIsDispatchModalOpen(false);
+    setActiveTab('studio');
+    fetchProposals();
+    fetchStats();
+  };
+
   return (
     <div className="min-h-screen bg-[#070c18] text-slate-100 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -107,10 +115,7 @@ export default function DashboardPage() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onNewProposal={() => {
-          setSelectedProposal(null);
-          setActiveTab('studio');
-        }}
+        onNewProposal={handleResetAndNewProposal}
       />
 
       {/* Main Container */}
@@ -130,6 +135,7 @@ export default function DashboardPage() {
                 proposal={selectedProposal}
                 onUpdateProposal={handleUpdateProposal}
                 onOpenDispatchModal={() => setIsDispatchModalOpen(true)}
+                onStartNew={handleResetAndNewProposal}
               />
             ) : (
               <div className="glass-panel p-8 rounded-2xl border-slate-800 text-center space-y-3">
@@ -240,6 +246,7 @@ export default function DashboardPage() {
           onClose={() => setIsDispatchModalOpen(false)}
           proposal={selectedProposal}
           onDispatchComplete={handleDispatchComplete}
+          onResetAndNewProposal={handleResetAndNewProposal}
         />
       )}
 

@@ -112,8 +112,15 @@ export async function extractProposalFromNotes(input: ExtractionInput): Promise<
   return generateHeuristicProposal(input, startTime, 'Greenscape AI Deterministic Engine (Offline Mode)');
 }
 
+export function generateProposalId(): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const rand = Math.random().toString(36).substring(2, 8);
+  return `prop_${dateStr}_${rand}`;
+}
+
 function normalizeParsedProposal(parsed: any, input: ExtractionInput): Proposal {
-  const id = 'prop_' + Math.random().toString(36).substring(2, 9);
+  const id = generateProposalId();
   const now = new Date().toISOString();
 
   const items: ProposalLineItem[] = (parsed.items || []).map((item: any, index: number) => {
@@ -417,7 +424,7 @@ function generateHeuristicProposal(input: ExtractionInput, startTime: number, mo
     deadlineEstimate: isOver30k ? '48 hours' : 'N/A',
   };
 
-  const id = 'prop_' + Math.random().toString(36).substring(2, 9);
+  const id = generateProposalId();
   const now = new Date().toISOString();
 
   const proposal: Proposal = {
