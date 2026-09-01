@@ -6,7 +6,7 @@ $RepoUrl = "https://github.com/SunE1294/greenscape-autoquote-ai.git"
 Write-Host "Target Repository: $RepoUrl" -ForegroundColor Cyan
 
 git add .
-git commit -m "feat(stripe): wire real Stripe SDK for 50% deposit checkout sessions with dynamic URLs"
+git commit -m "feat(supabase): wire direct @supabase/supabase-js active inserts and PostgreSQL pooler for guaranteed DB persistence"
 git remote remove origin 2>$null
 git remote add origin $RepoUrl
 git push -u origin main

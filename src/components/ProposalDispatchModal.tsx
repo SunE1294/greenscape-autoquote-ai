@@ -43,6 +43,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
     setIsDispatching(true);
     try {
       const savedStripeKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_stripe_key') : null;
+      const savedSupabaseKey = typeof window !== 'undefined' ? localStorage.getItem('greenscape_supabase_key') : null;
 
       const res = await fetch('/api/dispatch', {
         method: 'POST',
@@ -55,6 +56,7 @@ export const ProposalDispatchModal: React.FC<DispatchModalProps> = ({
           dispatchSms,
           dispatchedBy: 'Marcus Tate',
           stripeSecretKey: savedStripeKey || undefined,
+          supabaseKey: savedSupabaseKey || undefined,
         }),
       });
 

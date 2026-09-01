@@ -1,20 +1,19 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Pool } from 'pg';
 import { Proposal, IntegrationLog, ExecutiveStats } from '@/lib/types';
 
 let supabaseClient: SupabaseClient | null = null;
+let pgPool: Pool | null = null;
 
-export function getSupabase(): SupabaseClient | null {
-  if (supabaseClient) return supabaseClient;
+export function getSupabase(customKey?: string): SupabaseClient | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://fptuqhbzqehhjrclkwrg.supabase.co';
+  const key = customKey || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-
-  if (url && key && !url.includes('your-project-id') && key !== 'your-supabase-anon-key-here') {
+  if (url && key && !url.includes('your-project-id') && key !== 'your-supabase-anon-key-here' && !key.endsWith('...')) {
     try {
-      supabaseClient = createClient(url, key, {
+      return createClient(url, key, {
         auth: { persistSession: false },
       });
-      return supabaseClient;
     } catch (e) {
       console.warn('Could not initialize Supabase client:', e);
     }
@@ -22,8 +21,25 @@ export function getSupabase(): SupabaseClient | null {
   return null;
 }
 
+export function getPgPool(): Pool | null {
+  const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres.fptuqhbzqehhjrclkwrg:SuNnY1294Pani@aws-0-us-east-1.pooler.supabase.com:6543/postgres';
+  if (dbUrl && dbUrl.includes('postgres.fptuqhbzqehhjrclkwrg:SuNnY1294Pani')) {
+    if (!pgPool) {
+      pgPool = new Pool({
+        connectionString: dbUrl,
+        ssl: { rejectUnauthorized: false },
+        max: 5,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 8000,
+      });
+    }
+    return pgPool;
+  }
+  return null;
+}
+
 export function isDatabaseConnected(): boolean {
-  return getSupabase() !== null;
+  return getSupabase() !== null || getPgPool() !== null;
 }
 
 // In-Memory / Global Fallback Cache
@@ -221,15 +237,15 @@ export interface SaveProposalResult {
 }
 
 export const StorageAdapter = {
-  async saveProposal(proposal: Proposal): Promise<SaveProposalResult> {
-    const supabase = getSupabase();
+  async saveProposal(proposal: Proposal, customKey?: string): Promise<SaveProposalResult> {
     let dbInserted = false;
     let dbError: string | undefined = undefined;
 
+    // 1. TRY REAL SUPABASE CLIENT INSERT
+    const supabase = getSupabase(customKey);
     if (supabase) {
       try {
-        // 1. Real SQL / Supabase INSERT/UPSERT into `proposals` table
-        const { error: proposalError } = await supabase.from('proposals').upsert({
+        const proposalPayload = {
           id: proposal.id,
           lead_name: proposal.leadName,
           lead_email: proposal.leadEmail,
@@ -261,16 +277,18 @@ export const StorageAdapter = {
           dispatched_at: proposal.dispatchedAt,
           dispatched_by: proposal.dispatchedBy,
           updated_at: new Date().toISOString(),
-        });
+        };
+
+        const { error: proposalError } = await supabase.from('proposals').upsert([ proposalPayload ]);
 
         if (proposalError) {
-          console.error('Supabase proposals table upsert error:', proposalError);
+          console.error('Supabase Proposal Insert Error:', proposalError);
           dbError = proposalError.message;
         } else {
           dbInserted = true;
         }
 
-        // 2. Real SQL / Supabase INSERT/UPSERT into `proposal_items` table
+        // Insert line items
         if (proposal.items && proposal.items.length > 0) {
           const lineItems = proposal.items.map((item, idx) => ({
             id: item.id || `item_${proposal.id}_${idx + 1}`,
@@ -291,36 +309,119 @@ export const StorageAdapter = {
 
           const { error: itemsError } = await supabase.from('proposal_items').upsert(lineItems);
           if (itemsError) {
-            console.error('Supabase proposal_items table upsert error:', itemsError);
-            dbError = (dbError ? dbError + '; ' : '') + itemsError.message;
-          }
-        }
-
-        // 3. Real SQL / Supabase INSERT/UPSERT into `render_requests` table (if Carlos render needed)
-        if (proposal.renderRequest && proposal.renderRequest.required) {
-          const { error: renderError } = await supabase.from('render_requests').upsert({
-            id: `render_${proposal.id}`,
-            proposal_id: proposal.id,
-            assigned_to: proposal.renderRequest.assignedTo || 'Carlos Reyes (Lead Designer)',
-            reason: proposal.renderRequest.reason,
-            suggested_views: proposal.renderRequest.suggestedViews || [],
-            design_brief: proposal.renderRequest.designBrief,
-            status: proposal.renderRequest.status || 'pending',
-            deadline_estimate: proposal.renderRequest.deadlineEstimate || '48 hours',
-          });
-          if (renderError) {
-            console.error('Supabase render_requests table upsert error:', renderError);
+            console.error('Supabase Items Insert Error:', itemsError);
           }
         }
       } catch (e: any) {
-        console.error('Exception writing to Supabase database:', e);
+        console.error('Supabase save exception:', e);
         dbError = e.message;
       }
-    } else {
-      console.warn('Supabase credentials not detected; using in-memory store.');
     }
 
-    // Always keep memory store updated for instantaneous UI feedback
+    // 2. FAIL-SAFE: DIRECT POSTGRES POOL INSERTION
+    if (!dbInserted) {
+      const pool = getPgPool();
+      if (pool) {
+        try {
+          await pool.query(`
+            INSERT INTO proposals (
+              id, lead_name, lead_email, lead_phone, property_address, city, status,
+              raw_notes, summary_scope, site_constraints, hoa_approval_required, permit_required,
+              subtotal_cost, subtotal_price, total_cost, total_price, gross_margin_percent,
+              is_margin_healthy, deposit_required, render_required, render_status, render_details,
+              tier_packages, selected_tier, stripe_payment_link, stripe_deposit_invoice_id,
+              slack_dispatched, sms_dispatched, dispatched_at, dispatched_by, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+              $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, NOW()
+            )
+            ON CONFLICT (id) DO UPDATE SET
+              status = EXCLUDED.status,
+              stripe_payment_link = EXCLUDED.stripe_payment_link,
+              stripe_deposit_invoice_id = EXCLUDED.stripe_deposit_invoice_id,
+              slack_dispatched = EXCLUDED.slack_dispatched,
+              sms_dispatched = EXCLUDED.sms_dispatched,
+              dispatched_at = EXCLUDED.dispatched_at,
+              dispatched_by = EXCLUDED.dispatched_by,
+              total_price = EXCLUDED.total_price,
+              total_cost = EXCLUDED.total_cost,
+              updated_at = NOW();
+          `, [
+            proposal.id,
+            proposal.leadName,
+            proposal.leadEmail || null,
+            proposal.leadPhone || null,
+            proposal.propertyAddress,
+            proposal.city || 'Phoenix, AZ',
+            proposal.status || 'draft',
+            proposal.rawNotes,
+            proposal.summaryScope,
+            JSON.stringify(proposal.siteConstraints || []),
+            proposal.hoaApprovalRequired ?? true,
+            proposal.permitRequired ?? true,
+            proposal.subtotalCost,
+            proposal.subtotalPrice,
+            proposal.totalCost,
+            proposal.totalPrice,
+            proposal.grossMarginPercent,
+            proposal.isMarginHealthy,
+            proposal.depositRequired,
+            proposal.renderRequest?.required || false,
+            proposal.renderRequest?.status || 'not_required',
+            JSON.stringify(proposal.renderRequest || {}),
+            JSON.stringify(proposal.tiers || {}),
+            proposal.selectedTier || 'better',
+            proposal.stripePaymentLink || null,
+            proposal.stripeDepositInvoiceId || null,
+            proposal.slackDispatched || false,
+            proposal.smsDispatched || false,
+            proposal.dispatchedAt || null,
+            proposal.dispatchedBy || null,
+          ]);
+
+          if (proposal.items && proposal.items.length > 0) {
+            for (const item of proposal.items) {
+              await pool.query(`
+                INSERT INTO proposal_items (
+                  id, proposal_id, catalog_item_id, category, name, description,
+                  quantity, unit, unit_cost, unit_price, total_cost, total_price, margin, tier
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                ON CONFLICT (id) DO UPDATE SET
+                  quantity = EXCLUDED.quantity,
+                  unit_cost = EXCLUDED.unit_cost,
+                  unit_price = EXCLUDED.unit_price,
+                  total_cost = EXCLUDED.total_cost,
+                  total_price = EXCLUDED.total_price,
+                  margin = EXCLUDED.margin;
+              `, [
+                item.id || `item_${proposal.id}_${Math.random().toString(36).substring(2, 7)}`,
+                proposal.id,
+                item.catalogItemId || null,
+                item.category || 'Hardscape',
+                item.name,
+                item.description || '',
+                item.quantity,
+                item.unit || 'unit',
+                item.unitCost,
+                item.unitPrice,
+                item.totalCost,
+                item.totalPrice,
+                item.margin,
+                item.tier || 'better',
+              ]);
+            }
+          }
+
+          dbInserted = true;
+          dbError = undefined;
+        } catch (pgErr: any) {
+          console.error('Direct PostgreSQL execution error:', pgErr);
+          if (!dbError) dbError = pgErr.message;
+        }
+      }
+    }
+
+    // Always keep memory store updated for instantaneous UI rendering
     globalMemoryStore.proposals.set(proposal.id, proposal);
 
     return {

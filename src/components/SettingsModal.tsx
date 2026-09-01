@@ -23,6 +23,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       if (savedStripe) setStripeKey(savedStripe);
       const savedOpenAi = localStorage.getItem('greenscape_openai_key');
       if (savedOpenAi) setOpenaiKey(savedOpenAi);
+      const savedUrl = localStorage.getItem('greenscape_supabase_url');
+      if (savedUrl) setSupabaseUrl(savedUrl);
+      const savedKey = localStorage.getItem('greenscape_supabase_key');
+      if (savedKey) setSupabaseKey(savedKey);
     }
   }, [isOpen]);
 
@@ -33,6 +37,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     if (typeof window !== 'undefined') {
       if (stripeKey) localStorage.setItem('greenscape_stripe_key', stripeKey);
       if (openaiKey) localStorage.setItem('greenscape_openai_key', openaiKey);
+      if (supabaseUrl) localStorage.setItem('greenscape_supabase_url', supabaseUrl);
+      if (supabaseKey) localStorage.setItem('greenscape_supabase_key', supabaseKey);
     }
     setSavedSuccess(true);
     setTimeout(() => {

@@ -17,12 +17,14 @@
     "openai": "^4.29.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "pg": "^8.11.3",
     "stripe": "^14.21.0",
     "tailwind-merge": "^2.2.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.28",
+    "@types/pg": "^8.11.0",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "autoprefixer": "^10.4.18",
