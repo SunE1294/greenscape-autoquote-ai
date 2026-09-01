@@ -1,9 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Pool } from 'pg';
 import { Proposal, IntegrationLog, ExecutiveStats } from '@/lib/types';
 
-let supabaseClient: SupabaseClient | null = null;
-let pgPool: Pool | null = null;
+let pgPool: any = null;
 
 export function getSupabase(customKey?: string): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://fptuqhbzqehhjrclkwrg.supabase.co';
@@ -21,17 +19,21 @@ export function getSupabase(customKey?: string): SupabaseClient | null {
   return null;
 }
 
-export function getPgPool(): Pool | null {
+export async function getPgPool() {
+  if (typeof window !== 'undefined') return null;
   const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres.fptuqhbzqehhjrclkwrg:SuNnY1294Pani@aws-0-us-east-1.pooler.supabase.com:6543/postgres';
   if (dbUrl && dbUrl.includes('postgres.fptuqhbzqehhjrclkwrg:SuNnY1294Pani')) {
     if (!pgPool) {
-      pgPool = new Pool({
-        connectionString: dbUrl,
-        ssl: { rejectUnauthorized: false },
-        max: 5,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 8000,
-      });
+      try {
+        const { Pool } = await import('pg');
+        pgPool = new Pool({
+          connectionString: dbUrl,
+          ssl: { rejectUnauthorized: false },
+          max: 5,
+        });
+      } catch (e) {
+        console.warn('Could not initialize pg pool:', e);
+      }
     }
     return pgPool;
   }
@@ -39,7 +41,7 @@ export function getPgPool(): Pool | null {
 }
 
 export function isDatabaseConnected(): boolean {
-  return getSupabase() !== null || getPgPool() !== null;
+  return getSupabase() !== null;
 }
 
 // In-Memory / Global Fallback Cache
@@ -320,7 +322,7 @@ export const StorageAdapter = {
 
     // 2. FAIL-SAFE: DIRECT POSTGRES POOL INSERTION
     if (!dbInserted) {
-      const pool = getPgPool();
+      const pool = await getPgPool();
       if (pool) {
         try {
           await pool.query(`
